@@ -20,6 +20,15 @@ class DatabaseGet:
             ruList.append(i["ruWord"])
         return enList, ruList
 
+    def check_people_existence(self, ID):
+        _SQL = """SELECT * FROM users
+                            WHERE user_chat_id = ?"""
+        res = self.cursor.execute(_SQL, (ID,)).fetchall()
+        if not res:
+            return False
+        else:
+            return True
+
     def __del__(self):
         self.connection.commit()
         self.cursor.close()

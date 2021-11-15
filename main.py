@@ -1,22 +1,19 @@
 import telebot
 from random import randint
 import SQLConntection
+import sqlite3
 import config
+from decorators import checking_status
 
-task = [False, None, None]
 
 TOKEN = config.API_KEY
-
 bot = telebot.TeleBot(TOKEN)
 
-database = "database.db"
-path = "/home/alex/Документы/from linux/PycharmProjects/EnglishPythonBot/databasepy"
-
+database = config.PATH_TO_DATABASE
 dbGet = SQLConntection.DatabaseGet(database)
 dbPost = SQLConntection.DatabasePost(database)
 
-
-queueDist = {}
+queueDist = {}  # Количество заданий у пользователя
 
 
 def add_or_edit_to_queue(ID, number):
@@ -25,6 +22,20 @@ def add_or_edit_to_queue(ID, number):
 
 def del_from_queue(ID):
     del queueDist[ID]
+
+
+def get_ru_word_to_adding(message):
+    sent = bot.send_message(message.chat.id, "Введите перевод этого слова.")
+    bot.register_next_step_handler(sent, add_new_word, str(message.text).lower())
+
+
+def add_new_word(message, enWord):
+    ruWord = str(message.text).lower()
+    try:
+        dbPost.add_word(enWord, ruWord, 1)
+        bot.send_message(message.chat.id, ("Слово " + enWord + " добавленно в базу"))
+    except sqlite3.IntegrityError:
+        bot.send_message(message.chat.id, ("Слово " + enWord + " уже есть в базе"))
 
 
 def inline_create_kb_with_words(messageID):
@@ -124,6 +135,13 @@ def getquestion(message):
             inline_create_kb_with_words(message.from_user.id)
     except Exception:
         bot.send_message(message.chat.id, "Возникла непредвиденная ошибка.")
+
+
+@bot.message_handler(commands=['addword'])
+@checking_status
+def start(message):
+    sent = bot.send_message(message.chat.id, "Введите новое слово на английском.")
+    bot.register_next_step_handler(sent, get_ru_word_to_adding)
 
 
 @bot.callback_query_handler(lambda c: c.data and c.data.startswith('true_word'))
