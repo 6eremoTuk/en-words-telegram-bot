@@ -1,17 +1,21 @@
 import telebot
 from random import randint
-import SQLConntection
+import SQLConnection
 import sqlite3
 import config
 from decorators import checking_status
 
 
-TOKEN = config.API_KEY
-bot = telebot.TeleBot(TOKEN)
+print('Starting EngTeleBot v.0.2.0')
+bot = telebot.TeleBot(config.API_KEY)
+print('Bot started successfully')
 
-database = config.PATH_TO_DATABASE
-dbGet = SQLConntection.DatabaseGet(database)
-dbPost = SQLConntection.DatabasePost(database)
+print('---------------------')
+
+print('Connecting to database')
+dbGet = SQLConnection.DatabaseGet(config.PATH_TO_DATABASE)
+dbPost = SQLConnection.DatabasePost(config.PATH_TO_DATABASE)
+print('Database connecting successfully')
 
 queueDist = {}  # Количество заданий у пользователя
 
@@ -81,7 +85,7 @@ def start(message):
 
 @bot.message_handler(commands=['help'])
 def help_command(message):
-    text = 'Команды get и getquestion можно расширить одним аргументом в формте "/команда [аргумент]". ' \
+    text = 'Команды get и get_question можно расширить одним аргументом в формте "/команда [аргумент]". ' \
            'Этот аргумент задает количество слов выдаваемых на один ввод команды.'
     bot.send_message(message.chat.id, text)
 
@@ -111,8 +115,8 @@ def get(message):
         bot.send_message(message.chat.id, "Возникла непредвиденная ошибка.")
 
 
-@bot.message_handler(commands=['getquestion'])
-def getquestion(message):
+@bot.message_handler(commands=['get_question'])
+def get_question(message):
     try:
         status = message.text.split()[1:][0]
     except IndexError:
@@ -137,15 +141,15 @@ def getquestion(message):
         bot.send_message(message.chat.id, "Возникла непредвиденная ошибка.")
 
 
-@bot.message_handler(commands=['addword'])
+@bot.message_handler(commands=['add_word'])
 @checking_status
-def start(message):
+def add_word(message):
     sent = bot.send_message(message.chat.id, "Введите новое слово на английском.")
     bot.register_next_step_handler(sent, get_ru_word_to_adding)
 
 
 @bot.callback_query_handler(lambda c: c.data and c.data.startswith('true_word'))
-def process_callback_kb1(callback_query):
+def true_word(callback_query):
     bot.send_message(callback_query.from_user.id, "Да")
     ID = callback_query.from_user.id
     if ID in queueDist:
@@ -160,7 +164,7 @@ def process_callback_kb1(callback_query):
 
 
 @bot.callback_query_handler(lambda c: c.data and c.data.startswith('false_word'))
-def process_callback_kb1(callback_query):
+def false_word(callback_query):
     bot.send_message(callback_query.from_user.id, "Нет")
 
 
