@@ -21,6 +21,7 @@ pip3 install -r requirements.txt
 
 - `API_KEY` - Token бота в Telegram. Методика получения ключа описана [в документации](https://core.telegram.org/bots#6-botfather)
 - `PATH_TO_DATABASE` - путь к базе данных SQLite
+- `ADMIN_ID_LIST` - список ID менеджеров с привилегиями
 
 Запуск осуществляется:
 

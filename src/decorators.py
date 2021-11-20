@@ -1,6 +1,7 @@
 from functools import wraps
+import config
 
-idList = ["696288583"]
+idList = config.ADMIN_ID_LIST
 
 
 def checking_status(func):
